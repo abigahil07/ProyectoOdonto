@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyectos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        input, textarea, button {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .button-section {
+            display: flex;
+            justify-content: space-between;
+        }
+        button {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        .proyecto {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .proyecto h2 {
+            color: #333;
+        }
+        .proyecto p {
+            color: #666;
+        }
+        .proyecto button {
+            background-color: #d9534f;
+            margin-right: 10px;
+        }
+        .proyecto button:hover {
+            background-color: #c9302c;
+        }
+        .proyecto .editar {
+            background-color: #5bc0de;
+        }
+        .proyecto .editar:hover {
+            background-color: #31b0d5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Listado de Tareas para Desarrollo</h1>
+        <form id="form-proyecto">
+            <input type="hidden" id="proyecto-id">
+            <input type="text" id="proyecto-nombre" placeholder="Nombre del Proyecto" required>
+            <textarea id="proyecto-descripcion" placeholder="Descripción del Proyecto" required></textarea>
+            <div class="button-section">
+                <button type="submit" class="guardar">Guardar Proyecto</button>
+                <button type="button" class="editar" id="boton-actualizar" style="display: none;" onclick="guardarCambios()">Actualizar Proyecto</button>
+            </div>
+        </form>
+        <div id="contenedor-proyectos"></div>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        document.getElementById('form-proyecto').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const id = document.getElementById('proyecto-id').value;
+            const nombre = document.getElementById('proyecto-nombre').value;
+            const descripcion = document.getElementById('proyecto-descripcion').value;
+
+            if (id) {
+                guardarCambios();
+            } else {
+                crearProyecto(nombre, descripcion);
+            }
+            this.reset();
+            document.getElementById('proyecto-id').value = ''; // Reinicia el ID después de guardar
+            document.getElementById('boton-actualizar').style.display = 'none'; // Oculta el botón de actualizar después de guardar
+            mostrarProyectos();
+        });
+
+        function mostrarProyectos() {
+            const contenedorProyectos = document.getElementById("contenedor-proyectos");
+            contenedorProyectos.innerHTML = ''; // Limpiar el contenedor antes de mostrar
+            proyectos.forEach(proyecto => {
+                const divProyecto = document.createElement("div");
+                divProyecto.className = "proyecto";
+                divProyecto.innerHTML = `
+                    <h2>${proyecto.nombre}</h2>
+                    <p>${proyecto.descripcion}</p>
+                    <h3>Tareas:</h3>
+                    <button class="editar" onclick="editarProyecto(${proyecto.id})">Editar</button>
+                    <button onclick="eliminarProyecto(${proyecto.id})">Eliminar</button>
+                `;
+
+                const tareasUl = document.createElement("ul");
+                proyecto.tareas.forEach(tarea => {
+                    const tareaLi = document.createElement("li");
+                    tareaLi.innerHTML = `
+                        <strong>${tarea.nombre}</strong><br>
+                        Descripción: ${tarea.descripcion || "Sin descripción"}<br>
+                        Estado: ${tarea.estado_completo ? "Completo" : "Pendiente"}<br>
+                        Fecha Límite: ${tarea.fecha_limite}
+                    `;
+                    tareasUl.appendChild(tareaLi);
+                });
+
+                divProyecto.appendChild(tareasUl);
+                contenedorProyectos.appendChild(divProyecto);
+            });
+        }
+
+        function crearProyecto(nombre, descripcion) {
+            const id = proyectos.length ? proyectos[proyectos.length - 1].id + 1 : 1;
+            proyectos.push({ id, nombre, descripcion, tareas: [] });
+            mostrarProyectos();
+        }
+
+        function editarProyecto(id) {
+            const proyecto = proyectos.find(p => p.id === id);
+            document.getElementById('proyecto-id').value = proyecto.id;
+            document.getElementById('proyecto-nombre').value = proyecto.nombre;
+            document.getElementById('proyecto-descripcion').value = proyecto.descripcion;
+            document.getElementById('boton-actualizar').style.display = 'inline-block'; // Muestra el botón de actualizar
+        }
+
+        function guardarCambios() {
+            const id = parseInt(document.getElementById('proyecto-id').value);
+            const nombre = document.getElementById('proyecto-nombre').value;
+            const descripcion = document.getElementById('proyecto-descripcion').value;
+            const proyecto = proyectos.find(p => p.id === id);
+            proyecto.nombre = nombre;
+            proyecto.descripcion = descripcion;
+            mostrarProyectos();
+            document.getElementById('form-proyecto').reset();
+            document.getElementById('boton-actualizar').style.display = 'none'; // Oculta el botón de actualizar después de guardar
+        }
+
+        function eliminarProyecto(id) {
+            const index = proyectos.findIndex(p => p.id === id);
+            proyectos.splice(index, 1);
+            mostrarProyectos();
+        }
+
+        mostrarProyectos();
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
